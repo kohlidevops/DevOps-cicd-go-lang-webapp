@@ -609,5 +609,45 @@ helm uninstall go-web-app
 kubect get all
 ```
 
+To configure a GitHub actions for Continuous Integration
+
+To create a Docker Hub token and map to GitHub
+
+Signin to yor Docker Hub and choose the Account and settings then click Personal Access Token settings - Generate access token
+
+```
+Access token description - golang-cicd
+Access permission - Read & Write
+Generate
+```
+
+copy it for configure in GitHub
+
+Go to your GitHub repository - select your project - Settings - Secrets and Variables - Clcik Actions - New Repository secrets
+
+```
+DOCKERHUB_USERNAME - latchudevops
+DOCKERHUB_TOKEN - *********************
+```
+
+<img width="716" alt="image" src="https://github.com/user-attachments/assets/564c53d4-0e83-4606-b840-d35f7d16362b">
+
+To configure a GitHub Token
+
+GitHub - Profile - settings - Developer settings - Personal Access Tokens - Classic Token - Generate a classic token - Select the permission what you want - Generate it
+
+copy the token and create a secrets and variables in project settings - Add secrets
+
+```
+TOKEN - *******************
+save it
+```
+
+<img width="698" alt="image" src="https://github.com/user-attachments/assets/b66745ef-1b6a-4504-a7d0-92fa408ffd49">
+
+
+
+
+
 
 
