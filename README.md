@@ -148,5 +148,143 @@ The image successfully pushed into the docker registry
 
 <img width="859" alt="image" src="https://github.com/user-attachments/assets/30cf583b-feff-4498-bb2b-a1c63e7f94ea">
 
+**To create a deployment, service and ingress manifests file**
+
+To create a k8 folder and create a manifests folder inside the k8 folder - Then create a deployment yaml file.
+
+**To create a deployment yaml file**
+
+https://github.com/kohlidevops/go-web-app-devops/blob/main/k8s/manifests/deployment.yaml
+
+```
+# This is a sample deployment manifest file for a simple web application.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-web-app
+  labels:
+    app: go-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-web-app
+  template:
+    metadata:
+      labels:
+        app: go-web-app
+    spec:
+      containers:
+      - name: go-web-app
+        image: latchudevops/go-web-app
+        ports:
+        - containerPort: 8080
+```
+
+**To create a service file**
+
+https://github.com/kohlidevops/go-web-app-devops/blob/main/k8s/manifests/service.yaml
+
+```
+# Service for the application
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web-app
+  labels:
+    app: go-web-app
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: go-web-app
+  type: ClusterIP
+```
+
+**To create a Ingress yaml file**
+
+https://github.com/kohlidevops/go-web-app-devops/blob/main/k8s/manifests/ingress.yaml
+
+```
+# Ingress resource for the application
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: go-web-app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: go-web-app.local
+    http:
+      paths: 
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: go-web-app
+            port:
+              number: 80
+```
+
+Now! we have to check all the yaml files are valid using kubernetes cluser. For that, we have to create a Amazon Elastic Kubernetes Cluster using EKSCTL
+
+To create an EKS from your local machine. For my case it is ubuntu22 machine
+
+Pre-req
+
+1. Install a AWS CLI
+2. Install kubectl cli
+3. Install eksctl
+
+Install a AWS CLI
+
+You can use below link to install or use below snippet
+
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+```
+cd /home/ubuntu/
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+```
+
+![image](https://github.com/user-attachments/assets/738c358c-20cc-473a-b67a-650cb86e6953)
+
+Install a kubectl cli
+
+You can use below link to install or use below snippet
+
+https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+
+```
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.29.0/2024-01-04/bin/linux/amd64/kubectl
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.29.0/2024-01-04/bin/linux/amd64/kubectl.sha256
+sha256sum -c kubectl.sha256
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+kubectl version --client
+```
+
+<img width="761" alt="image" src="https://github.com/user-attachments/assets/c9409a9c-40f5-4a88-ac65-6491d851b7d2">
+
+Install a eksctl
+
+You can use below link to install or use below snippet
+
+https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-eksctl.html
+
+```
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+```
+
+![image](https://github.com/user-attachments/assets/f06e6c2d-a72f-4712-a377-b38fd91a55c6)
 
 
