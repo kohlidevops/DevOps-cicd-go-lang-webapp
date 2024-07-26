@@ -407,4 +407,207 @@ spec:
   rules:
 ```
 
+The Network Loadbalancer has been created as we can see below
+
+<img width="754" alt="image" src="https://github.com/user-attachments/assets/01e29ed7-7fde-4448-aa55-e53a78b4404f">
+
+**What will happen If i access the Loadbalancer URL?**
+
+<img width="724" alt="image" src="https://github.com/user-attachments/assets/3e7ff7dd-b789-46f0-a5ab-bfa5599b0f85">
+
+It wont access. Because I clearly mentioned in ingress yaml file that request should forward to the backend instance when host rule = go-web-app.local. Thats why we cant access the go lanfg app.
+
+For that, we need to map this Loadbalancer IP to the given domain and we can check in the local system.
+
+**To map to local system**
+
+If you check the dnschecker as per below you can get 3 Ip address. You can copy any one of the IP and map with local system
+
+<img width="761" alt="image" src="https://github.com/user-attachments/assets/fc8d2afb-70db-43c4-9d29-ac222e42399d">
+
+```
+For windows location path - C:\Windows\System32\drivers\etc\hosts
+For Linux location path - /etc/hosts
+```
+
+<img width="499" alt="image" src="https://github.com/user-attachments/assets/4698fcb4-1c76-4db7-9555-882e3ccaf908">
+
+I can ping from local systems
+
+<img width="463" alt="image" src="https://github.com/user-attachments/assets/f0bbd65b-46f1-4699-8f11-30ef14067578">
+
+Awesome! Now I can able to see the go lang webapp
+
+<img width="946" alt="image" src="https://github.com/user-attachments/assets/59c89e99-4af3-4819-97fb-18a7855b9e74">
+
+**To create a Helm chart to deploy the application**
+
+**To install helm chart**
+
+You can use below link to install or use commands
+
+https://helm.sh/docs/intro/install/
+
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+helm version
+```
+
+<img width="866" alt="image" src="https://github.com/user-attachments/assets/eeacce29-f980-4174-b60e-8c0357f7d29b">
+
+To create a helm chart
+
+To create a new directory called helm inside the go-web-app
+
+```
+cd go-web-app
+mkdir helm
+cd helm
+helm create go-web-app-chart
+```
+
+<img width="674" alt="image" src="https://github.com/user-attachments/assets/81721c77-96a7-4e5f-91f5-44b7979f7dc1">
+
+If you list the go-web-app-chart, you can see the below files
+
+<img width="590" alt="image" src="https://github.com/user-attachments/assets/3d47af70-6278-4902-b086-5214b959b0aa">
+
+You can delete the charts directory and we can ignore this. So we have only 3 files such as Chart.yaml, templates folder, values.yaml
+
+<img width="572" alt="image" src="https://github.com/user-attachments/assets/07e6af28-a187-443c-8b61-c8a8226aecaf">
+
+If you list the templates folder inside go-web-app-chart
+
+<img width="681" alt="image" src="https://github.com/user-attachments/assets/a965f2be-eaab-4ce4-ad36-47cc05ffb72b">
+
+you can remove all the files from templates folder and copy all manifests file (deployment.yaml, service.yaml and ingress.yaml) to the templates folder.
+
+<img width="554" alt="image" src="https://github.com/user-attachments/assets/3185a3c4-56ef-4abe-9aac-467c07d9f4c9">
+
+Now all manifests files are available in the templates folder.
+
+**To change the image name and tag syntax in deployment yaml**
+
+To change the image name and tag in the deployment yaml file which is available in templates folder (as below)
+
+path - /home/ubuntu/go-web-app/helm/go-web-app-chart/templates/deployment.yaml
+
+```
+# This is a sample deployment manifest file for a simple web application.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-web-app
+  labels:
+    app: go-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-web-app
+  template:
+    metadata:
+      labels:
+        app: go-web-app
+    spec:
+      containers:
+      - name: go-web-app
+        image: latchudevops/go-web-app:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 8080
+````
+
+To update the values yaml file in go-web-chart folder
+
+To remove all the contents from values.yaml file
+
+```
+cd /home/ubuntu/go-web-app/helm/go-web-app-chart/
+//remove all contents from values.yaml file
+sudo nano values.yaml
+//To add the below content
+```
+
+values.yaml file
+
+use below code or link 
+
+https://github.com/kohlidevops/go-web-app-devops/blob/main/helm/go-web-app-chart/values.yaml
+
+```
+# Default values for go-web-app-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: abhishekf5/go-web-app
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1"
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+```
+
+To check whether helm chart is working
+
+For this, we can remove all the things such as deployment, service and ingress using kubectl
+
+```
+kubectl delete deploy go-web-app
+kubectl delete svc go-web-app
+kubectl delete ing go-web-app
+```
+
+<img width="576" alt="image" src="https://github.com/user-attachments/assets/f0f48e4c-e32d-4557-995f-16049f8e4606">
+
+Everything deleted! If you access the go lang web app then  its non found.
+
+<img width="812" alt="image" src="https://github.com/user-attachments/assets/1fa6a496-9470-4da9-b34f-bd612e6329e0">
+
+To deploy the web app through helm chart
+
+```
+cd /home/ubuntu/go-web-app/helm
+helm install go-web-app ./go-web-app-chart/
+```
+
+The helm package has been installed
+
+<img width="671" alt="image" src="https://github.com/user-attachments/assets/c35fe4b7-b9e7-4202-8fae-6cc400bf13f4">
+
+You can check! that all yaml has been deployed
+
+```
+kubectl get deploy
+kubectl get svc
+kubectl get ing
+```
+
+If I access the same go-lang webapp page, I can able to acess
+
+<img width="935" alt="image" src="https://github.com/user-attachments/assets/6cbeb4ac-a1ba-47a0-a90b-859ddfa0d8c1">
+
+So, The helm chart is working as we expected. Now you can uninstall the helm package
+
+```
+cd /home/ubuntu/go-web-app/helm
+helm uninstall go-web-app 
+kubect get all
+```
+
+
 
