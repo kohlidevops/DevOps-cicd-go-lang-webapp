@@ -287,4 +287,124 @@ eksctl version
 
 ![image](https://github.com/user-attachments/assets/f06e6c2d-a72f-4712-a377-b38fd91a55c6)
 
+**To configure AWS on your local machine**
+
+To create a access / secret key and map to your system using aws configure command
+
+```
+aws configure
+AWS Access Key ID [None]:
+AWS Secret Access Key [None]:
+Default region name [None]: 
+Default output format [None]:
+```
+
+You can create an IAM role and associate with your EC2 instance - if you are assuming your local system as EC2 instance
+
+**To Install a EKS using eksctl**
+
+```
+eksctl create cluster --name demo-cluster --region ap-south-1
+```
+
+My nodes are in available state
+
+<img width="823" alt="image" src="https://github.com/user-attachments/assets/b7dfe8c8-6bd8-4edf-9e55-f6aec85cbce7">
+
+```
+kubectl get nodes
+```
+
+<img width="660" alt="image" src="https://github.com/user-attachments/assets/11aff24d-2cb5-4511-ab1d-b7dae6a3cd71">
+
+To run the deployment yaml file from local system
+
+```
+cd /home/ubuntu/go-web-app
+kubectl apply -f k8s/manifests/deployment.yaml
+kubectl get pods
+```
+
+<img width="638" alt="image" src="https://github.com/user-attachments/assets/f5fe49f6-f641-4ebe-835a-9686198a944e">
+
+To run the service yaml file from local system
+
+```
+cd /home/ubuntu/go-web-app
+kubectl apply -f k8s/manifests/service.yaml
+kubectl get svc
+```
+
+<img width="592" alt="image" src="https://github.com/user-attachments/assets/7d7e262c-7079-4b2f-a0c3-8ced30bae736">
+
+To run the ingress yaml file from local system
+
+```
+cd /home/ubuntu/go-web-app
+kubectl apply -f k8s/manifests/ingress.yaml
+kubectl get ing
+```
+
+<img width="716" alt="image" src="https://github.com/user-attachments/assets/706534a3-613b-4858-80bf-0e3df4b966d9">
+
+Still we can't able to access. Because address is not assigned yet to ingress means ingress controller not assigned any IP address.
+
+As of now, All yaml files are created and its valid state only. We can check with NodePort for service. For that, we have edit the service and change the type as NodePort instad of ClusterIP and save it
+
+```
+kubectl edit svc go-web-app
+type: NodePort
+kubectl get svc
+```
+
+<img width="632" alt="image" src="https://github.com/user-attachments/assets/4212af62-40d9-453a-ba04-a3e37c8c3f3e">
+
+Now you can check with node ip with node port 
+
+http://65.2.150.163:32174/courses
+
+<img width="943" alt="image" src="https://github.com/user-attachments/assets/cd972022-42bf-41ef-b153-01bb4c1ae71e">
+
+
+To create a Nginx Ingress controller
+
+To create a Nginx Ingress controller to create Network Loadbalancer on the AWS Cloud to expose your application through this ALB.
+
+You can use below link to execute the ingress controller 
+
+https://kubernetes.github.io/ingress-nginx/deploy/#aws
+
+or you can use below snippet to run the nginx ingress controller
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/aws/deploy.yaml
+```
+
+What does Nginx Ingress controller will do? It just watch the Ingress that you created by yaml file then this ingress controller will create a loadbalancer for you.
+
+<img width="928" alt="image" src="https://github.com/user-attachments/assets/5e2b844a-257d-41f6-b97b-12934aae4b61">
+
+```
+kubectl get pods -n ingress-nginx
+kubectl get ing
+```
+
+<img width="914" alt="image" src="https://github.com/user-attachments/assets/62eb3852-c6c0-4cde-834b-25afca10c1c2">
+
+**How Ingress controller mapped to the ingress?**
+
+If you edit the Ingress controller, you can see the ingress-class=nginx
+
+```
+ --ingress-class=nginx
+```
+
+which is mapped ingress yaml file - You can edit the ingress yaml and check the content
+
+```
+spec:
+  ingressClassName: nginx
+  rules:
+```
+
 
